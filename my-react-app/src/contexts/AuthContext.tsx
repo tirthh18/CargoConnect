@@ -5,6 +5,7 @@ type User = {
   id: string;
   email: string;
   name: string;
+  city: string;
   role: 'admin' | 'customer';
 };
 
@@ -63,6 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: data.user._id || 'static-admin',
           email: data.user.email,
           name: data.user.name,
+          city:data.user.city,
           role: data.user.role
         };
         if (data.token) {

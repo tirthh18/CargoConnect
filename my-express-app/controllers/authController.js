@@ -36,7 +36,7 @@ exports.register = async (req, res) => {
     const user = new User({ name, email, password, role });
     await user.save();
 
-    const token = generateToken(user); // make sure this exists
+    const token = generateToken(user); 
     res.json({ user, token });
   } catch (error) {
     res.status(500).json({ error: "Registration failed" });

@@ -1,40 +1,17 @@
-// const mongoose = require("mongoose");
-
-// const ParcelSchema = new mongoose.Schema({
-//   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-//   trackingNumber: { type: String, unique: true },
-//   status: { type: String, enum: ["Pending", "Out for Delivery", "Delivered"], default: "Pending" },
-//   priority: String,
-//   sender: {
-//     name: String,
-//     address: String,
-//     pincode: String,
-//     mobile: String,
-//   },
-//   receiver: {
-//     name: String,
-//     address: String,
-//     city: String,
-//     pincode: String,
-//     mobile: String,
-//   },
-//   deliveryType: String,
-//   weight: String,
-//   scheduledDate: String,
-//   scheduledTime: String,
-//   payment: {
-//     method: { type: String, enum: ["cod", "upi"] },
-//     upiId: { type: String, default: null },
-//     insurance: { type: Boolean, default: false },
-//   },
-// }, { timestamps: true });
-
-// module.exports = mongoose.model("Parcel", ParcelSchema);
-// src/models/Parcel.js
-
 const mongoose = require("mongoose");
 
-const ParcelSchema = new mongoose.Schema(
+const coordinatesSchema = new mongoose.Schema({
+  lat: {
+    type: Number,
+    required: true,
+  },
+  lng: {
+    type: Number,
+    required: true,
+  },
+});
+
+const parcelSchema = new mongoose.Schema(
   {
     trackingNumber: {
       type: String,
@@ -50,17 +27,14 @@ const ParcelSchema = new mongoose.Schema(
       type: String,
       enum: [
         "pending",
-        "processing",
-        "shipped",
+        "picked_up",
+        "in_transit",
         "out_for_delivery",
         "delivered",
         "cancelled",
-        "returned",
       ],
       default: "pending",
     },
-
-    // Sender details
     senderDetails: {
       senderName: {
         type: String,
@@ -86,9 +60,8 @@ const ParcelSchema = new mongoose.Schema(
         type: String,
         required: true,
       },
+      coordinates: coordinatesSchema, // Added coordinates for pickup location
     },
-
-    // Receiver details
     receiverDetails: {
       receiverName: {
         type: String,
@@ -110,15 +83,14 @@ const ParcelSchema = new mongoose.Schema(
         type: String,
         required: true,
       },
+      coordinates: coordinatesSchema, // Added coordinates for drop location
     },
-
-    // Order details
     parcelDetails: {
-        priority: {
-      type: String,
-      enum: ["low", "medium", "high"],
-      default: "medium",
-    },
+      priority: {
+        type: String,
+        enum: ["low", "medium", "high"],
+        default: "medium",
+      },
       deliveryType: {
         type: String,
         enum: ["local", "intercity"],
@@ -126,7 +98,6 @@ const ParcelSchema = new mongoose.Schema(
       },
       weight: {
         type: String,
-        enum: ["1kg", "5kg", "10kg", "15kg"],
         required: true,
       },
       scheduleDate: {
@@ -137,8 +108,6 @@ const ParcelSchema = new mongoose.Schema(
         type: String,
         required: true,
       },
-
-      // Payment details
       paymentMethod: {
         type: String,
         enum: ["cod", "upi"],
@@ -146,7 +115,6 @@ const ParcelSchema = new mongoose.Schema(
       },
       upiId: {
         type: String,
-        default: null,
       },
       totalCost: {
         type: Number,
@@ -154,45 +122,51 @@ const ParcelSchema = new mongoose.Schema(
       },
       paymentStatus: {
         type: String,
-        enum: ["pending", "processing", "completed", "failed", "refunded"],
+        enum: ["pending", "processing", "completed", "failed"],
         default: "pending",
       },
     },
-
-    // timeline: [
-    //   {
-    //     status: {
-    //       type: String,
-    //       required: true,
-    //     },
-    //     timestamp: {
-    //       type: Date,
-    //       default: Date.now,
-    //     },
-    //     description: {
-    //       type: String,
-    //       required: true,
-    //     },
-    //     location: {
-    //       type: String,
-    //       default: null,
-    //     },
-    //   },
-    // ],
-
+    currentLocation: {
+      coordinates: coordinatesSchema, // Added current tracking location
+      updatedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+    timeline: [
+      {
+        status: {
+          type: String,
+          required: true,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+        description: {
+          type: String,
+          required: true,
+        },
+        coordinates: coordinatesSchema, // Added coordinates for each timeline event
+        updatedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+      },
+    ],
+    estimatedDelivery: {
+      type: Date,
+    },
     assignedDeliveryAgent: {
-      type: String, 
-      default: null
-    }     
+      type: String,
+      default: null,
+    },
   },
-  {
-    timestamps: true,
-  }
+
+  { timestamps: true }
 );
 
-ParcelSchema.index({ user: 1 });
-ParcelSchema.index({ status: 1 });
+// Create a 2dsphere index on the currentLocation.coordinates field for geospatial queries
+parcelSchema.index({ "currentLocation.coordinates": "2dsphere" });
 
-const Parcel = mongoose.model("Parcel", ParcelSchema);
-
-module.exports = Parcel;
+module.exports = mongoose.model("Parcel", parcelSchema);

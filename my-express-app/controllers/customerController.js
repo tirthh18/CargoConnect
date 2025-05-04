@@ -16,7 +16,6 @@ exports.placeOrder = async (req, res) => {
 
     const trackingNumber = `TRK${Math.floor(100000 + Math.random() * 900000)}`;
     
-    // Simulate saving to DB
     const order = {
       userId: req.user.id,
       trackingNumber,
@@ -32,7 +31,6 @@ exports.placeOrder = async (req, res) => {
       status: "pending",
     };
 
-    // TODO: Replace this with DB call like: await Order.create(order);
     console.log("Order placed:", order);
 
     res.status(201).json({
@@ -46,21 +44,3 @@ exports.placeOrder = async (req, res) => {
   }
 };
 
-// exports.getCustomerParcels = async (req, res) => {
-//   const { customerId } = req.params;
-
-//   const parcels = await Parcel.find({ customerId });
-
-//   const totalOrders = parcels.length;
-//   const currentOrders = parcels.filter(p => p.status !== 'Delivered' && p.status !== 'Cancelled').length;
-//   const cancelledOrders = parcels.filter(p => p.status === 'Cancelled').length;
-//   const totalSpent = parcels.reduce((sum, p) => sum + (p.price || 0), 0);
-
-//   res.json({
-//     totalOrders,
-//     currentOrders,
-//     cancelledOrders,
-//     totalSpent,
-//     parcels
-//   });
-// };

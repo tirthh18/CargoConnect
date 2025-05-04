@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require("cookie-parser");
 const customerRoutes = require('./routes/customerRoutes');
-const agentRoutes = require('./routes/agentRoutes');
 const parcelRoutes = require('./routes/parcel');
 const authRoutes = require('./routes/authRoutes');
 require('dotenv').config();
@@ -28,7 +27,6 @@ app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
-app.use('/api/agents', agentRoutes);
 app.use('/api/parcels', parcelRoutes);
 
 mongoose.connect(process.env.MONGO_URI)
